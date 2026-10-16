@@ -1,0 +1,93 @@
+﻿@page
+@model FastFood.Web.Pages.CheckoutModel
+
+@{
+    ViewData["Title"] = "ثبت سفارش";
+}
+
+<section class="container py-5">
+    <h2 class="mb-4">🧾 ثبت سفارش</h2>
+
+    @if (Model.OrderId.HasValue)
+    {
+        <div class="card shadow-sm border-success">
+            <div class="card-body text-center py-5">
+                <h3 class="text-success mb-3">✅ سفارش شما ثبت شد!</h3>
+
+                <p class="mb-2">
+                    شماره سفارش شما:
+                    <strong>#@Model.OrderId.Value</strong>
+                </p>
+
+                <p class="text-muted">
+                    سفارش شما با موفقیت ثبت شده است.
+                </p>
+
+                <a asp-page="/Index" class="btn btn-warning mt-3">
+                    بازگشت به منو
+                </a>
+            </div>
+        </div>
+    }
+    else if (Model.Items.Count == 0)
+    {
+        <div class="alert alert-info">
+            سبد خرید شما خالی است.
+            <a asp-page="/Index" class="alert-link">مشاهده منو</a>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="mb-3">خلاصه سفارش</h5>
+
+                @foreach (var item in Model.Items)
+                {
+                    <div class="d-flex justify-content-between border-bottom py-2">
+                        <span>@item.Name × @item.Quantity</span>
+                        <span>@((item.Price * item.Quantity).ToString("N0")) تومان</span>
+                    </div>
+                }
+
+                <div class="text-end mt-4">
+                    <h5>
+                        مبلغ کل:
+                        <span class="text-success">
+                            @Model.Total.ToString("N0") تومان
+                        </span>
+                    </h5>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger mt-4">
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <div class="alert alert-warning mt-4">
+                        برای ثبت سفارش ابتدا وارد حساب کاربری خود شوید.
+                    </div>
+
+                    <a asp-page="/Login"
+                       asp-route-returnUrl="/Checkout"
+                       class="btn btn-warning w-100 mt-2">
+                        ورود و ادامه ثبت سفارش
+                    </a>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="PlaceOrder">
+                        <button type="submit"
+                                class="btn btn-warning w-100 mt-3">
+                            ثبت نهایی سفارش
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+</section>

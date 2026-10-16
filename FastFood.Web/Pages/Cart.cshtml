@@ -1,0 +1,160 @@
+﻿@page
+@model FastFood.Web.Pages.CartModel
+
+@{
+    ViewData["Title"] = "سبد خرید";
+}
+
+<section class="container py-5">
+    <h2 class="mb-4">🛒 سبد خرید من</h2>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <h5>سبد خرید شما خالی است.</h5>
+
+                <p class="text-muted mt-2">
+                    از منوی غذا محصولات مورد علاقه‌ات را انتخاب کن.
+                </p>
+
+                <a asp-page="/Menu" class="btn btn-warning mt-3">
+                    مشاهده منوی غذا
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                @foreach (var item in Model.Items)
+                {
+                    <div class="row align-items-center g-3 py-3 border-bottom">
+
+                        <div class="col-4 col-md-2">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@($"https://localhost:7153{item.ImageUrl}")"
+                                     alt="@item.Name"
+                                     class="img-fluid rounded"
+                                     style="height: 100px; width: 100%; object-fit: cover;" />
+                            }
+                        </div>
+
+                        <div class="col-8 col-md-3">
+                            <h5>@item.Name</h5>
+
+                            <p class="text-muted mb-0">
+                                قیمت واحد:
+                                @item.Price.ToString("N0") تومان
+                            </p>
+                        </div>
+
+                        <div class="col-6 col-md-3">
+                            <span class="d-block text-muted small mb-2">
+                                تعداد
+                            </span>
+
+                            <div class="d-flex align-items-center gap-2">
+
+                                <form method="post"
+                                      asp-page-handler="UpdateQuantity"
+                                      class="m-0">
+                                    <input type="hidden"
+                                           name="productId"
+                                           value="@item.ProductId" />
+
+                                    <input type="hidden"
+                                           name="quantity"
+                                           value="@(item.Quantity - 1)" />
+
+                                    <button type="submit"
+                                            class="btn btn-outline-secondary btn-sm"
+                                            aria-label="کاهش تعداد">
+                                        −
+                                    </button>
+                                </form>
+
+                                <span class="fw-bold">
+                                    @item.Quantity
+                                </span>
+
+                                <form method="post"
+                                      asp-page-handler="UpdateQuantity"
+                                      class="m-0">
+                                    <input type="hidden"
+                                           name="productId"
+                                           value="@item.ProductId" />
+
+                                    <input type="hidden"
+                                           name="quantity"
+                                           value="@(item.Quantity + 1)" />
+
+                                    <button type="submit"
+                                            class="btn btn-outline-secondary btn-sm"
+                                            aria-label="افزایش تعداد">
+                                        +
+                                    </button>
+                                </form>
+
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-2 text-end">
+                            <span class="d-block text-muted small mb-2">
+                                مبلغ
+                            </span>
+
+                            <strong class="text-success">
+                                @((item.Price * item.Quantity).ToString("N0"))
+                                تومان
+                            </strong>
+                        </div>
+
+                        <div class="col-12 col-md-2 text-md-end">
+                            <form method="post"
+                                  asp-page-handler="RemoveItem"
+                                  class="m-0">
+                                <input type="hidden"
+                                       name="productId"
+                                       value="@item.ProductId" />
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm w-100">
+                                    🗑 حذف محصول
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                }
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
+
+                    <h4 class="mb-0">
+                        مبلغ کل:
+                        <span class="text-success">
+                            @Model.Total.ToString("N0") تومان
+                        </span>
+                    </h4>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a asp-page="/Menu"
+                           class="btn btn-outline-secondary">
+                            ادامه خرید
+                        </a>
+
+                        <a asp-page="/Checkout"
+                           class="btn btn-warning">
+                            ادامه به ثبت سفارش
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    }
+</section>

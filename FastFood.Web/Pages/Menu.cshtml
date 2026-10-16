@@ -1,0 +1,271 @@
+﻿@page
+@model FastFood.Web.Pages.MenuModel
+
+@{
+    ViewData["Title"] = "منوی غذا";
+}
+
+<div class="container py-4" dir="rtl">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">منوی غذا</h1>
+        <p class="text-muted">غذای مورد علاقه‌ات رو انتخاب کن!</p>
+    </div>
+
+    <!-- جست‌وجو، فیلتر دسته‌بندی و مرتب‌سازی -->
+    <form method="get"
+          class="row g-3 mb-4"
+          dir="rtl"
+          id="menuSearchForm">
+
+        <div class="col-12 col-md-4 position-relative">
+            <label for="searchInput" class="form-label">
+                جست‌وجوی غذا
+            </label>
+
+            <input type="text"
+                   id="searchInput"
+                   name="SearchTerm"
+                   value="@Model.SearchTerm"
+                   class="form-control"
+                   placeholder="نام غذا (حداقل ۳ کاراکتر)"
+                   autocomplete="off" />
+
+            <div id="suggestionsList"
+                 class="list-group position-absolute w-100 shadow-sm"
+                 style="z-index:1000; display:none;">
+            </div>
+
+            <small id="searchMessage" class="text-danger d-none">
+                برای جست‌وجو حداقل ۳ کاراکتر وارد کن.
+            </small>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label for="CategoryId" class="form-label">
+                دسته‌بندی غذا
+            </label>
+
+            <select id="CategoryId"
+                    name="CategoryId"
+                    class="form-select">
+                <option value="">همه دسته‌بندی‌ها</option>
+
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id"
+                            selected="@(Model.CategoryId == category.Id)">
+                        @category.Name
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label for="SortOrder" class="form-label">
+                مرتب‌سازی قیمت
+            </label>
+
+            <select id="SortOrder"
+                    name="SortOrder"
+                    class="form-select">
+                <option value=""
+                        selected="@(string.IsNullOrEmpty(Model.SortOrder))">
+                    پیش‌فرض
+                </option>
+
+                <option value="price_asc"
+                        selected="@(Model.SortOrder == "price_asc")">
+                    ارزان‌ترین
+                </option>
+
+                <option value="price_desc"
+                        selected="@(Model.SortOrder == "price_desc")">
+                    گران‌ترین
+                </option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-danger w-100">
+                اعمال فیلتر
+            </button>
+        </div>
+    </form>
+
+    @if (Model.Products == null || Model.Products.Count == 0)
+    {
+        <div class="alert alert-info text-center">
+            غذایی با این مشخصات پیدا نشد.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var product in Model.Products)
+            {
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 shadow-sm">
+
+                        @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                        {
+                            <img src="@($"https://localhost:7153{product.ImageUrl}")"
+                                 class="card-img-top"
+                                 alt="@product.Name"
+                                 style="height:200px; object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                 style="height:200px;">
+                                <span class="text-muted">بدون تصویر</span>
+                            </div>
+                        }
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">
+                                @product.Name
+                            </h5>
+
+                            <p class="card-text text-muted">
+                                @(string.IsNullOrWhiteSpace(product.Description)
+                                    ? "توضیحاتی برای این محصول ثبت نشده است."
+                                    : product.Description)
+                            </p>
+
+                            <div class="mt-auto">
+                                <p class="fw-bold text-success fs-5 mb-2">
+                                    @product.Price.ToString("N0") تومان
+                                </p>
+
+                                @if (product.IsAvailable)
+                                {
+                                    <span class="badge bg-success">موجود</span>
+
+                                    <form method="post"
+                                          asp-page-handler="AddToCart"
+                                          class="mt-3">
+                                        <input type="hidden"
+                                               name="productId"
+                                               value="@product.Id" />
+
+                                        <button type="submit"
+                                                class="btn btn-danger w-100">
+                                            <i class="bi bi-cart-plus"></i>
+                                            افزودن به سبد خرید
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">ناموجود</span>
+
+                                    <button type="button"
+                                            class="btn btn-secondary w-100 mt-3"
+                                            disabled>
+                                        فعلاً ناموجود
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<script>
+    (() => {
+        const searchInput = document.getElementById("searchInput");
+        const suggestionsList = document.getElementById("suggestionsList");
+        const searchForm = document.getElementById("menuSearchForm");
+        const searchMessage = document.getElementById("searchMessage");
+
+        let debounceTimer;
+        let activeController;
+
+        searchInput.addEventListener("input", function () {
+            const term = this.value.trim();
+
+            clearTimeout(debounceTimer);
+
+            if (activeController) {
+                activeController.abort();
+            }
+
+            suggestionsList.replaceChildren();
+            suggestionsList.style.display = "none";
+
+            if (term.length < 3) {
+                searchMessage.classList.toggle(
+                    "d-none",
+                    term.length === 0
+                );
+                return;
+            }
+
+            searchMessage.classList.add("d-none");
+
+            debounceTimer = setTimeout(async () => {
+                const controller = new AbortController();
+                activeController = controller;
+
+                try {
+                    const response = await fetch(
+                        `?handler=Suggestions&term=${encodeURIComponent(term)}`,
+                        { signal: controller.signal }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("دریافت پیشنهادها ناموفق بود.");
+                    }
+
+                    const suggestions = await response.json();
+
+                    if (searchInput.value.trim() !== term) {
+                        return;
+                    }
+
+                    suggestions.forEach(name => {
+                        const item = document.createElement("button");
+                        item.type = "button";
+                        item.className =
+                            "list-group-item list-group-item-action";
+                        item.textContent = name;
+
+                        item.addEventListener("click", () => {
+                            searchInput.value = name;
+                            suggestionsList.style.display = "none";
+                            searchForm.requestSubmit();
+                        });
+
+                        suggestionsList.appendChild(item);
+                    });
+
+                    suggestionsList.style.display =
+                        suggestions.length > 0 ? "block" : "none";
+                } catch (error) {
+                    if (error.name !== "AbortError") {
+                        console.error(error);
+                    }
+                }
+            }, 250);
+        });
+
+        searchForm.addEventListener("submit", function (event) {
+            const term = searchInput.value.trim();
+
+            if (term.length > 0 && term.length < 3) {
+                event.preventDefault();
+                searchMessage.classList.remove("d-none");
+                searchInput.focus();
+            }
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!searchForm.contains(event.target)) {
+                suggestionsList.style.display = "none";
+            }
+        });
+    })();
+</script>

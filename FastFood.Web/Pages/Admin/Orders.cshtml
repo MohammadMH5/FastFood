@@ -1,0 +1,92 @@
+﻿@page
+@model FastFood.Web.Pages.Admin.OrdersModel
+
+@{
+    ViewData["Title"] = "مدیریت سفارش‌ها";
+}
+
+<div class="container mt-4" dir="rtl">
+    <h2 class="mb-4">مدیریت سفارش‌ها</h2>
+
+    @if (!ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            @foreach (var error in ModelState.Values
+                    .SelectMany(v => v.Errors))
+            {
+                <div>@error.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    @if (Model.Orders.Count == 0)
+    {
+        <div class="alert alert-info">
+            سفارشی برای نمایش وجود ندارد.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>شماره سفارش</th>
+                        <th>مبلغ کل</th>
+                        <th>وضعیت فعلی</th>
+                        <th>تغییر وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td>@order.Id</td>
+                            <td>@order.TotalPrice.ToString("N0") تومان</td>
+                            <td>@order.Status</td>
+                            <td>
+                                <form method="post"
+                                      asp-page-handler="UpdateStatus">
+                                    <input type="hidden"
+                                           name="orderId"
+                                           value="@order.Id" />
+
+                                    <div class="d-flex gap-2">
+                                        <select name="status"
+                                                class="form-select">
+                                            <option value="Pending"
+                                                    selected="@(order.Status == "Pending")">
+                                                در انتظار
+                                            </option>
+                                            <option value="Preparing"
+                                                    selected="@(order.Status == "Preparing")">
+                                                در حال آماده‌سازی
+                                            </option>
+                                            <option value="Ready"
+                                                    selected="@(order.Status == "Ready")">
+                                                آماده تحویل
+                                            </option>
+                                            <option value="Completed"
+                                                    selected="@(order.Status == "Completed")">
+                                                تکمیل‌شده
+                                            </option>
+                                            <option value="Cancelled"
+                                                    selected="@(order.Status == "Cancelled")">
+                                                لغوشده
+                                            </option>
+                                        </select>
+
+                                        <button type="submit"
+                                                class="btn btn-primary text-nowrap">
+                                            ذخیره
+                                        </button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

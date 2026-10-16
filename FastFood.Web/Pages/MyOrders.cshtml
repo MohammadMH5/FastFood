@@ -1,0 +1,71 @@
+﻿@page
+@model FastFood.Web.Pages.MyOrdersModel
+
+@{
+    ViewData["Title"] = "سفارش‌های من";
+}
+
+<section class="container py-5" dir="rtl">
+    <h2 class="mb-4">📦 سفارش‌های من</h2>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            @Model.ErrorMessage
+        </div>
+    }
+    else if (Model.Orders.Count == 0)
+    {
+        <div class="alert alert-info">
+            هنوز سفارشی ثبت نکرده‌اید.
+            <a asp-page="/Index" class="alert-link">مشاهده منو</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var order in Model.Orders)
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <h5>
+                            <a asp-page="/OrderDetails"
+                               asp-route-id="@order.Id"
+                               class="text-decoration-none">
+                                سفارش شماره #@order.Id
+                            </a>
+                        </h5>
+
+                        <span class="badge bg-secondary">
+                            @order.Status
+                        </span>
+                    </div>
+
+                    <hr />
+
+                    @foreach (var item in order.Items)
+                    {
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span>
+                                @item.ProductName × @item.Quantity
+                            </span>
+
+                            <span>
+                                @((item.UnitPrice * item.Quantity).ToString("N0")) تومان
+                            </span>
+                        </div>
+                    }
+
+                    <div class="text-end mt-3">
+                        <strong>
+                            مبلغ کل:
+                            <span class="text-success">
+                                @order.TotalPrice.ToString("N0") تومان
+                            </span>
+                        </strong>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</section>

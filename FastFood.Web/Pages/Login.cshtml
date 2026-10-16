@@ -1,0 +1,53 @@
+﻿@page
+@model FastFood.Web.Pages.LoginModel
+
+@{
+    ViewData["Title"] = "ورود";
+}
+
+<section class="container py-5" style="max-width: 450px;">
+
+    <h2 class="text-center mb-4">ورود به حساب کاربری</h2>
+
+    <form method="post">
+
+        <div class="mb-3">
+            <label asp-for="Input.Username" class="form-label">
+                نام کاربری
+            </label>
+
+            <input asp-for="Input.Username" class="form-control" />
+
+            <span asp-validation-for="Input.Username"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.Password" class="form-label">
+                رمز عبور
+            </label>
+
+            <input asp-for="Input.Password"
+                   type="password"
+                   class="form-control" />
+
+            <span asp-validation-for="Input.Password"
+                  class="text-danger"></span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger">
+                @Model.ErrorMessage
+            </div>
+        }
+        <input type="hidden" asp-for="ReturnUrl" />
+
+        <button type="submit" class="btn btn-warning w-100">
+            ورود
+        </button>
+
+    </form>
+
+</section>
+
