@@ -1,7 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FastFood.Web.Models;
-using System.Collections.Generic;
 
 namespace FastFood.Web.Services
 {
@@ -18,8 +17,11 @@ namespace FastFood.Web.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<OrderResponse?> CreateOrderAsync()
+        public async Task<OrderResponse?> CreateOrderAsync(int orderTypeId)
         {
+            if (orderTypeId != 1 && orderTypeId != 2)
+                return null;
+
             var token = _httpContextAccessor.HttpContext?
                 .Session.GetString("AccessToken");
 
@@ -32,6 +34,11 @@ namespace FastFood.Web.Services
             request.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
+            request.Content = JsonContent.Create(new
+            {
+                OrderTypeId = orderTypeId
+            });
+
             using var response =
                 await _httpClient.SendAsync(request);
 
@@ -42,7 +49,6 @@ namespace FastFood.Web.Services
                 .ReadFromJsonAsync<OrderResponse>();
         }
 
-        
         public async Task<OrderViewModel?> GetOrderByIdAsync(int orderId)
         {
             var token = _httpContextAccessor.HttpContext?
@@ -52,8 +58,7 @@ namespace FastFood.Web.Services
                 return null;
 
             using var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                $"api/Order/{orderId}");
+                HttpMethod.Get, $"api/Order/{orderId}");
 
             request.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
@@ -67,7 +72,6 @@ namespace FastFood.Web.Services
                 .ReadFromJsonAsync<OrderViewModel>();
         }
 
-
         public async Task<List<OrderViewModel>?> GetMyOrdersAsync()
         {
             var token = _httpContextAccessor.HttpContext?
@@ -80,8 +84,7 @@ namespace FastFood.Web.Services
                 HttpMethod.Get, "api/Order");
 
             request.Headers.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue(
-                    "Bearer", token);
+                new AuthenticationHeaderValue("Bearer", token);
 
             using var response = await _httpClient.SendAsync(request);
 
@@ -91,7 +94,6 @@ namespace FastFood.Web.Services
             return await response.Content
                 .ReadFromJsonAsync<List<OrderViewModel>>();
         }
-
 
         public async Task<List<OrderViewModel>?> GetAllOrdersForAdminAsync()
         {
@@ -141,8 +143,6 @@ namespace FastFood.Web.Services
 
             return response.IsSuccessStatusCode;
         }
-
-
     }
 
     public class OrderResponse

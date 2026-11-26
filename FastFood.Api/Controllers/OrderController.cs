@@ -31,16 +31,28 @@ namespace FastFood.Api.Controllers
                 && userId > 0;
         }
 
+        // Customer: ایجاد سفارش از سبد خرید
         [HttpPost]
-        public async Task<IActionResult> CreateOrder()
+        public async Task<IActionResult> CreateOrder(
+            [FromBody] CreateOrderDto dto)
         {
             if (!TryGetUserId(out var userId))
             {
                 return Unauthorized();
             }
 
+            if (dto.OrderTypeId != 1 && dto.OrderTypeId != 2)
+            {
+                return BadRequest(new
+                {
+                    message = "نوع سفارش نامعتبر است."
+                });
+            }
+
             var order =
-                await _orderService.CreateOrderFromCartAsync(userId);
+                await _orderService.CreateOrderFromCartAsync(
+                    userId,
+                    dto.OrderTypeId);
 
             if (order == null)
             {
@@ -53,6 +65,7 @@ namespace FastFood.Api.Controllers
             return Ok(order);
         }
 
+        // Customer: مشاهده سفارش‌های خود
         [HttpGet]
         public async Task<IActionResult> GetMyOrders()
         {
@@ -67,6 +80,7 @@ namespace FastFood.Api.Controllers
             return Ok(orders);
         }
 
+        // Customer: مشاهده یک سفارش از سفارش‌های خود
         [HttpGet("{orderId:int}")]
         public async Task<IActionResult> GetOrderById(int orderId)
         {
@@ -84,7 +98,9 @@ namespace FastFood.Api.Controllers
             }
 
             var order =
-                await _orderService.GetOrderByIdAsync(orderId, userId);
+                await _orderService.GetOrderByIdAsync(
+                    orderId,
+                    userId);
 
             if (order == null)
             {
@@ -97,6 +113,7 @@ namespace FastFood.Api.Controllers
             return Ok(order);
         }
 
+        // Admin: مشاهده تمام سفارش‌ها
         [HttpGet("admin")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllOrdersForAdmin()
@@ -106,9 +123,11 @@ namespace FastFood.Api.Controllers
             return Ok(orders);
         }
 
+        // Admin: مشاهده یک سفارش
         [HttpGet("admin/{orderId:int}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetOrderByIdForAdmin(int orderId)
+        public async Task<IActionResult> GetOrderByIdForAdmin(
+            int orderId)
         {
             if (orderId <= 0)
             {
@@ -119,7 +138,8 @@ namespace FastFood.Api.Controllers
             }
 
             var order =
-                await _orderService.GetOrderByIdForAdminAsync(orderId);
+                await _orderService.GetOrderByIdForAdminAsync(
+                    orderId);
 
             if (order == null)
             {
@@ -132,6 +152,7 @@ namespace FastFood.Api.Controllers
             return Ok(order);
         }
 
+        // Admin: تغییر وضعیت سفارش
         [HttpPut("admin/{orderId:int}/status")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateOrderStatus(
@@ -146,7 +167,8 @@ namespace FastFood.Api.Controllers
                 });
             }
 
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Status))
+            if (dto == null ||
+                string.IsNullOrWhiteSpace(dto.Status))
             {
                 return BadRequest(new
                 {

@@ -10,11 +10,12 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+
+        
+        <nav class="navbar navbar-expand-lg bg-dark navbar-dark" dir="rtl">
             <div class="container">
 
-                <a class="navbar-brand fw-bold"
-                   asp-page="/Index">
+                <a class="navbar-brand fw-bold" asp-page="/Index">
                     فست‌فود
                 </a>
 
@@ -25,53 +26,41 @@
                         aria-controls="mainNavbar"
                         aria-expanded="false"
                         aria-label="باز کردن منو">
-
                     <span class="navbar-toggler-icon"></span>
-
                 </button>
 
-                <div class="collapse navbar-collapse"
-                     id="mainNavbar">
+                <div class="collapse navbar-collapse" id="mainNavbar">
 
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <ul class="navbar-nav me-0 ms-0 mb-2 mb-lg-0">
 
                         <li class="nav-item">
-                            <a class="nav-link"
-                               asp-page="/Index">
-                                خانه
-                            </a>
+                            <a class="nav-link" asp-page="/Index">خانه</a>
                         </li>
 
-                        <a class="nav-link" asp-page="/Menu">
-                            منوی غذا                    
-                        </a>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Menu">منوی غذا</a>
+                        </li>
 
-                        
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link"
-                                   asp-page="/MyOrders">
+                                <a class="nav-link" asp-page="/MyOrders">
                                     سفارش‌های من
                                 </a>
                             </li>
                         }
 
-                        
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link"
-                                   asp-page="/Admin/Orders">
+                                <a class="nav-link" asp-page="/Admin/Orders">
                                     مدیریت سفارش‌ها
                                 </a>
                             </li>
                         }
 
-
                     </ul>
 
-                    
                     <div class="d-flex align-items-center gap-2">
 
                         <a asp-page="/Cart" class="btn btn-warning">
@@ -80,10 +69,6 @@
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <span class="text-light">
-                                خوش آمدی، @User.Identity.Name
-                            </span>
-
                             <form method="post" asp-page="/Logout" class="m-0">
                                 <button type="submit" class="btn btn-outline-light">
                                     خروج
@@ -99,10 +84,10 @@
 
                     </div>
 
-
                 </div>
             </div>
         </nav>
+        
     </header>
     <div class="container">
         <main role="main" class="pb-3">

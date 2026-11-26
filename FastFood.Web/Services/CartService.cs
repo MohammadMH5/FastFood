@@ -6,6 +6,8 @@ namespace FastFood.Web.Services
     public class CartService
     {
         private const string CartSessionKey = "CartItems";
+        private const string OrderTypeSessionKey = "OrderTypeId";
+
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CartService(IHttpContextAccessor httpContextAccessor)
@@ -48,23 +50,21 @@ namespace FastFood.Web.Services
 
             SaveItems(items);
         }
+
         public void UpdateQuantity(int productId, int quantity)
         {
             var items = GetItems();
 
-            var item = items.FirstOrDefault(x => x.ProductId == productId);
+            var item = items.FirstOrDefault(
+                x => x.ProductId == productId);
 
             if (item == null)
                 return;
 
             if (quantity <= 0)
-            {
                 items.Remove(item);
-            }
             else
-            {
                 item.Quantity = quantity;
-            }
 
             SaveItems(items);
         }
@@ -78,13 +78,51 @@ namespace FastFood.Web.Services
             SaveItems(items);
         }
 
+        public int? GetOrderTypeId()
+        {
+            var session = _httpContextAccessor.HttpContext?.Session;
+
+            if (session == null)
+                return null;
+
+            var value = session.GetString(OrderTypeSessionKey);
+
+            return int.TryParse(value, out var orderTypeId)
+                ? orderTypeId
+                : null;
+        }
+
+        public void SetOrderTypeId(int orderTypeId)
+        {
+            if (orderTypeId != 1 && orderTypeId != 2)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(orderTypeId),
+                    "نوع سفارش معتبر نیست.");
+            }
+
+            var session = _httpContextAccessor.HttpContext?.Session;
+
+            if (session == null)
+            {
+                throw new InvalidOperationException(
+                    "نشست کاربر در دسترس نیست.");
+            }
+
+            session.SetString(
+                OrderTypeSessionKey,
+                orderTypeId.ToString());
+        }
+
         private void SaveItems(List<CartItem> items)
         {
             var session = _httpContextAccessor.HttpContext?.Session;
 
             if (session == null)
+            {
                 throw new InvalidOperationException(
                     "نشست کاربر در دسترس نیست.");
+            }
 
             session.SetString(
                 CartSessionKey,

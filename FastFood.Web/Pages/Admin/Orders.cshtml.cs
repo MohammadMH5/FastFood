@@ -32,7 +32,11 @@ namespace FastFood.Web.Pages.Admin
                 return Page();
             }
 
-            Orders = orders;
+            // جدیدترین سفارش در ابتدای فهرست
+            Orders = orders
+                .OrderByDescending(order => order.Id)
+                .ToList();
+
             return Page();
         }
 
@@ -41,14 +45,18 @@ namespace FastFood.Web.Pages.Admin
         {
             var allowedStatuses = new[]
             {
-                "Pending", "Preparing", "Ready",
-                "Completed", "Cancelled"
+                "Pending",
+                "Preparing",
+                "Ready",
+                "Completed",
+                "Cancelled"
             };
 
             if (!allowedStatuses.Contains(status))
             {
                 ModelState.AddModelError(
-                    string.Empty, "وضعیت انتخاب‌شده معتبر نیست.");
+                    string.Empty,
+                    "وضعیت انتخاب‌شده معتبر نیست.");
 
                 return await OnGetAsync();
             }

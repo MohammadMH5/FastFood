@@ -20,6 +20,15 @@ namespace FastFood.Web.Pages
 
         public string? ErrorMessage { get; private set; }
 
+        public int? OrderTypeId { get; private set; }
+
+        public string OrderTypeName => OrderTypeId switch
+        {
+            1 => "داخل رستوران",
+            2 => "بیرون‌بر",
+            _ => "انتخاب نشده"
+        };
+
         public CheckoutModel(
             CartService cartService,
             CartApiService cartApiService,
@@ -32,12 +41,12 @@ namespace FastFood.Web.Pages
 
         public void OnGet()
         {
-            Items = _cartService.GetItems();
+            LoadPageData();
         }
 
         public async Task<IActionResult> OnPostPlaceOrderAsync()
         {
-            Items = _cartService.GetItems();
+            LoadPageData();
 
             if (!(User.Identity?.IsAuthenticated ?? false))
             {
@@ -53,7 +62,14 @@ namespace FastFood.Web.Pages
                 return Page();
             }
 
-            // بررسی وجود سبد خرید در API
+            if (OrderTypeId != 1 && OrderTypeId != 2)
+            {
+                ErrorMessage =
+                    "نوع سفارش مشخص نیست. لطفاً به سبد خرید برگردید و نوع سفارش را انتخاب کنید.";
+
+                return Page();
+            }
+
             var cartExists = await _cartApiService.CartExistsAsync();
 
             if (cartExists)
@@ -64,11 +80,11 @@ namespace FastFood.Web.Pages
                 {
                     ErrorMessage =
                         "پاک‌سازی سبد خرید سرور ناموفق بود.";
+
                     return Page();
                 }
             }
 
-            // انتقال محصولات سبد سایت به API
             foreach (var item in Items)
             {
                 var added = await _cartApiService.AddItemAsync(
@@ -79,21 +95,22 @@ namespace FastFood.Web.Pages
                 {
                     ErrorMessage =
                         "انتقال محصولات به سرور ناموفق بود. سفارش ثبت نشد.";
+
                     return Page();
                 }
             }
 
-            // ثبت سفارش در API
-            var order = await _orderApiService.CreateOrderAsync();
+            var order = await _orderApiService.CreateOrderAsync(
+                OrderTypeId.Value);
 
             if (order == null)
             {
                 ErrorMessage =
                     "پاسخ موفقی از ثبت سفارش دریافت نشد. قبل از تلاش مجدد، سفارش‌های خود را بررسی کنید.";
+
                 return Page();
             }
 
-            // پاک کردن سبد سایت پس از دریافت سفارش موفق
             foreach (var item in Items.ToList())
             {
                 _cartService.RemoveItem(item.ProductId);
@@ -103,6 +120,12 @@ namespace FastFood.Web.Pages
             Items = new List<CartItem>();
 
             return Page();
+        }
+
+        private void LoadPageData()
+        {
+            Items = _cartService.GetItems();
+            OrderTypeId = _cartService.GetOrderTypeId();
         }
     }
 }

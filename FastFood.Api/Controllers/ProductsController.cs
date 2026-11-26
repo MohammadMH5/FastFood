@@ -66,12 +66,12 @@ namespace FastFood.Api.Controllers
                 return BadRequest("فایل تصویر ارسال نشده است.");
             }
             var allowedExtensions = new[]
-{
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".webp"
-};
+            {
+                ".jpg",
+                ".jpeg",
+                ".png",
+                ".webp"
+            };
 
             var extension =
                 Path.GetExtension(file.FileName)

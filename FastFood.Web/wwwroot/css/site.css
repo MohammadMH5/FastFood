@@ -1,4 +1,4 @@
-html {
+﻿html {
   font-size: 14px;
 }
 
@@ -20,3 +20,20 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+@media (min-width: 992px) {
+    #mainNavbar {
+        direction: rtl;
+    }
+
+        #mainNavbar .navbar-nav {
+            margin-right: 0 !important;
+            margin-left: auto !important;
+        }
+
+        #mainNavbar > .d-flex {
+            margin-right: auto;
+            margin-left: 0;
+        }
+}
+

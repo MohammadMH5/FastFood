@@ -5,25 +5,38 @@
     ViewData["Title"] = "ثبت سفارش";
 }
 
-<section class="container py-5">
+<section class="container py-5" dir="rtl">
     <h2 class="mb-4">🧾 ثبت سفارش</h2>
 
     @if (Model.OrderId.HasValue)
     {
         <div class="card shadow-sm border-success">
             <div class="card-body text-center py-5">
-                <h3 class="text-success mb-3">✅ سفارش شما ثبت شد!</h3>
+                <h3 class="text-success mb-3">
+                    ✅ سفارش شما ثبت شد!
+                </h3>
 
                 <p class="mb-2">
                     شماره سفارش شما:
                     <strong>#@Model.OrderId.Value</strong>
                 </p>
 
+                <p>
+                    نوع سفارش:
+                    <strong>@Model.OrderTypeName</strong>
+                </p>
+
                 <p class="text-muted">
                     سفارش شما با موفقیت ثبت شده است.
                 </p>
 
-                <a asp-page="/Index" class="btn btn-warning mt-3">
+                <a asp-page="/MyOrders"
+                   class="btn btn-outline-secondary mt-3">
+                    مشاهده سفارش‌های من
+                </a>
+
+                <a asp-page="/Index"
+                   class="btn btn-warning mt-3">
                     بازگشت به منو
                 </a>
             </div>
@@ -33,7 +46,9 @@
     {
         <div class="alert alert-info">
             سبد خرید شما خالی است.
-            <a asp-page="/Index" class="alert-link">مشاهده منو</a>
+            <a asp-page="/Menu" class="alert-link">
+                مشاهده منو
+            </a>
         </div>
     }
     else
@@ -42,11 +57,27 @@
             <div class="card-body">
                 <h5 class="mb-3">خلاصه سفارش</h5>
 
+                <div class="alert alert-info">
+                    نوع سفارش انتخاب‌شده:
+                    <strong>@Model.OrderTypeName</strong>
+
+                    <a asp-page="/Cart"
+                       class="alert-link me-2">
+                        تغییر نوع سفارش
+                    </a>
+                </div>
+
                 @foreach (var item in Model.Items)
                 {
-                    <div class="d-flex justify-content-between border-bottom py-2">
-                        <span>@item.Name × @item.Quantity</span>
-                        <span>@((item.Price * item.Quantity).ToString("N0")) تومان</span>
+                    <div class="d-flex justify-content-between border-bottom py-2 gap-3">
+                        <span>
+                            @item.Name × @item.Quantity
+                        </span>
+
+                        <span>
+                            @((item.Price * item.Quantity).ToString("N0"))
+                            تومان
+                        </span>
                     </div>
                 }
 
@@ -66,7 +97,19 @@
                     </div>
                 }
 
-                @if (User.Identity?.IsAuthenticated != true)
+                @if (Model.OrderTypeId != 1 &&
+                     Model.OrderTypeId != 2)
+                {
+                    <div class="alert alert-warning mt-3">
+                        ابتدا نوع سفارش را در سبد خرید انتخاب کنید.
+                    </div>
+
+                    <a asp-page="/Cart"
+                       class="btn btn-warning w-100 mt-2">
+                        بازگشت به سبد خرید
+                    </a>
+                }
+                else if (User.Identity?.IsAuthenticated != true)
                 {
                     <div class="alert alert-warning mt-4">
                         برای ثبت سفارش ابتدا وارد حساب کاربری خود شوید.

@@ -4,6 +4,10 @@
     {
         public int Id { get; set; }
 
+        public int OrderTypeId { get; set; }
+
+        public string OrderTypeName { get; set; } = string.Empty;
+
         public decimal TotalPrice { get; set; }
 
         public string Status { get; set; } = string.Empty;

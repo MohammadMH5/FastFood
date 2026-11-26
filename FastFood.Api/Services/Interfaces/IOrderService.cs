@@ -5,7 +5,9 @@ namespace FastFood.Api.Services.Interfaces
     public interface IOrderService
     {
         // Customer
-        Task<OrderDto?> CreateOrderFromCartAsync(int userId);
+        Task<OrderDto?> CreateOrderFromCartAsync(
+            int userId,
+            int orderTypeId);
 
         Task<IEnumerable<OrderDto>> GetMyOrdersAsync(
             int userId);

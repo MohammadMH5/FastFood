@@ -19,6 +19,7 @@ namespace FastFood.Api.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<OrderType> OrderTypes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>()
@@ -78,6 +79,13 @@ namespace FastFood.Api.Data
             modelBuilder.Entity<Payment>()
                 .Property(p => p.Amount)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.OrderType)
+                .WithMany(ot => ot.Orders)
+                .HasForeignKey(o => o.OrderTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

@@ -19,6 +19,7 @@ namespace FastFood.Web.Pages
             _orderApiService = orderApiService;
         }
 
+        
         public async Task OnGetAsync()
         {
             var orders = await _orderApiService.GetMyOrdersAsync();
@@ -30,7 +31,11 @@ namespace FastFood.Web.Pages
                 return;
             }
 
-            Orders = orders;
+            // نمایش سفارش‌های جدیدتر در ابتدای فهرست
+            Orders = orders
+                .OrderByDescending(order => order.Id)
+                .ToList();
         }
+
     }
 }

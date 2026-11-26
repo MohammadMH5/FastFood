@@ -18,6 +18,7 @@ namespace FastFood.Api.Repositories
         public async Task<Order?> GetByIdWithItemsAsync(int id)
         {
             return await _context.Orders
+                .Include(o => o.OrderType)
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -26,14 +27,17 @@ namespace FastFood.Api.Repositories
         public async Task<IEnumerable<Order>> GetAllWithItemsAsync()
         {
             return await _context.Orders
+                .Include(o => o.OrderType)
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetByUserIdAsync(int userId)
+        public async Task<IEnumerable<Order>> GetByUserIdAsync(
+            int userId)
         {
             return await _context.Orders
+                .Include(o => o.OrderType)
                 .Include(o => o.OrderItems)
                 .Where(o => o.UserId == userId)
                 .ToListAsync();

@@ -120,6 +120,9 @@ namespace FastFood.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("OrderTypeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -132,6 +135,8 @@ namespace FastFood.Api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderTypeId");
 
                     b.HasIndex("UserId");
 
@@ -170,6 +175,23 @@ namespace FastFood.Api.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("FastFood.Api.Models.OrderType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OrderTypes");
                 });
 
             modelBuilder.Entity("FastFood.Api.Models.Payment", b =>
@@ -272,11 +294,19 @@ namespace FastFood.Api.Migrations
 
             modelBuilder.Entity("FastFood.Api.Models.Order", b =>
                 {
+                    b.HasOne("FastFood.Api.Models.OrderType", "OrderType")
+                        .WithMany("Orders")
+                        .HasForeignKey("OrderTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("FastFood.Api.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("OrderType");
 
                     b.Navigation("User");
                 });
@@ -330,6 +360,11 @@ namespace FastFood.Api.Migrations
             modelBuilder.Entity("FastFood.Api.Models.Order", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("FastFood.Api.Models.OrderType", b =>
+                {
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

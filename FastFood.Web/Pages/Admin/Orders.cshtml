@@ -12,7 +12,7 @@
     {
         <div class="alert alert-danger">
             @foreach (var error in ModelState.Values
-                    .SelectMany(v => v.Errors))
+                .SelectMany(v => v.Errors))
             {
                 <div>@error.ErrorMessage</div>
             }
@@ -32,21 +32,45 @@
                 <thead class="table-dark">
                     <tr>
                         <th>شماره سفارش</th>
+                        <th>نوع سفارش</th>
                         <th>مبلغ کل</th>
                         <th>وضعیت فعلی</th>
                         <th>تغییر وضعیت</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @foreach (var order in Model.Orders)
                     {
                         <tr>
                             <td>@order.Id</td>
-                            <td>@order.TotalPrice.ToString("N0") تومان</td>
+
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(order.OrderTypeName))
+                                {
+                                    @order.OrderTypeName
+                                }
+                                else
+                                {
+                                    @(order.OrderTypeId switch
+                                    {
+                                        1 => "داخل رستوران",
+                                        2 => "بیرون‌بر",
+                                        _ => "نامشخص"
+                                    })
+                                }
+                            </td>
+
+                            <td>
+                                @order.TotalPrice.ToString("N0") تومان
+                            </td>
+
                             <td>@order.Status</td>
+
                             <td>
                                 <form method="post"
                                       asp-page-handler="UpdateStatus">
+
                                     <input type="hidden"
                                            name="orderId"
                                            value="@order.Id" />
@@ -54,22 +78,27 @@
                                     <div class="d-flex gap-2">
                                         <select name="status"
                                                 class="form-select">
+
                                             <option value="Pending"
                                                     selected="@(order.Status == "Pending")">
                                                 در انتظار
                                             </option>
+
                                             <option value="Preparing"
                                                     selected="@(order.Status == "Preparing")">
                                                 در حال آماده‌سازی
                                             </option>
+
                                             <option value="Ready"
                                                     selected="@(order.Status == "Ready")">
                                                 آماده تحویل
                                             </option>
+
                                             <option value="Completed"
                                                     selected="@(order.Status == "Completed")">
                                                 تکمیل‌شده
                                             </option>
+
                                             <option value="Cancelled"
                                                     selected="@(order.Status == "Cancelled")">
                                                 لغوشده

@@ -131,6 +131,52 @@
                     </div>
                 }
 
+                <div class="card bg-light mt-4">
+                    <div class="card-body" dir="rtl">
+                        <h5 class="mb-3">نوع سفارش را انتخاب کنید</h5>
+
+                        <form method="post" asp-page-handler="ContinueToCheckout">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="OrderTypeId"
+                                       id="dineIn"
+                                       value="1"
+                                       checked="@(Model.OrderTypeId == 1)" />
+
+                                <label class="form-check-label" for="dineIn">
+                                    🍽️ داخل رستوران
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="OrderTypeId"
+                                       id="takeout"
+                                       value="2"
+                                       checked="@(Model.OrderTypeId == 2)" />
+
+                                <label class="form-check-label" for="takeout">
+                                    🛍️ بیرون‌بر
+                                </label>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                            {
+                                <div class="alert alert-danger mt-3">
+                                    @Model.ErrorMessage
+                                </div>
+                            }
+
+                            <button type="submit" class="btn btn-warning mt-2">
+                                ادامه به ثبت سفارش
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
 
                     <h4 class="mb-0">

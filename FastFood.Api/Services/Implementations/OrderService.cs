@@ -26,12 +26,20 @@ namespace FastFood.Api.Services.Implementations
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<OrderDto?> CreateOrderFromCartAsync(int userId)
+        public async Task<OrderDto?> CreateOrderFromCartAsync(
+            int userId,
+            int orderTypeId)
         {
             if (userId <= 0)
             {
                 throw new BusinessException(
                     "شناسه کاربر نامعتبر است.");
+            }
+
+            if (orderTypeId != 1 && orderTypeId != 2)
+            {
+                throw new BusinessException(
+                    "نوع سفارش نامعتبر است.");
             }
 
             var cart = await _unitOfWork.Carts
@@ -42,7 +50,7 @@ namespace FastFood.Api.Services.Implementations
                 return null;
             }
 
-            // Validate all cart items before creating the order.
+            // اعتبارسنجی تمام اقلام سبد خرید
             foreach (var cartItem in cart.CartItems)
             {
                 if (cartItem.Quantity <= 0 ||
@@ -74,6 +82,7 @@ namespace FastFood.Api.Services.Implementations
             var order = new Order
             {
                 UserId = userId,
+                OrderTypeId = orderTypeId,
                 Status = "Pending"
             };
 
@@ -104,7 +113,8 @@ namespace FastFood.Api.Services.Implementations
             return MapToDto(order);
         }
 
-        public async Task<IEnumerable<OrderDto>> GetMyOrdersAsync(int userId)
+        public async Task<IEnumerable<OrderDto>> GetMyOrdersAsync(
+            int userId)
         {
             var orders = await _unitOfWork.Orders
                 .GetByUserIdAsync(userId);
@@ -135,7 +145,8 @@ namespace FastFood.Api.Services.Implementations
             return orders.Select(MapToDto).ToList();
         }
 
-        public async Task<OrderDto?> GetOrderByIdForAdminAsync(int orderId)
+        public async Task<OrderDto?> GetOrderByIdForAdminAsync(
+            int orderId)
         {
             var order = await _unitOfWork.Orders
                 .GetByIdWithItemsAsync(orderId);
@@ -191,11 +202,29 @@ namespace FastFood.Api.Services.Implementations
 
         private static OrderDto MapToDto(Order order)
         {
+            // اگر رابطه بارگذاری شده باشد، نام از دیتابیس می‌آید.
+            // در غیر این صورت، از شناسه نوع سفارش استفاده می‌کنیم.
+            
+
+            var orderTypeName = order.OrderType?.Name;
+
+            if (string.IsNullOrWhiteSpace(orderTypeName))
+            {
+                orderTypeName = order.OrderTypeId switch
+                {
+                    1 => "داخل رستوران",
+                    2 => "بیرون‌بر",
+                    _ => string.Empty
+                };
+            }
             return new OrderDto
             {
                 Id = order.Id,
+                OrderTypeId = order.OrderTypeId,
+                OrderTypeName = orderTypeName,
                 TotalPrice = order.TotalPrice,
                 Status = order.Status,
+
                 Items = order.OrderItems
                     .Select(item => new OrderItemDto
                     {
